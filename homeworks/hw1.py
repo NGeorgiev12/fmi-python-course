@@ -41,8 +41,8 @@ def е_патриотична(amounts, exchange_rates):
 
     return "ПАТРИОТИЧНА!" if е_валиден_лев(result) else "НЕПАТРИОТИЧНА!"
 
-# exchange_rates = {"EUR": 1.9558, "USD": 1.6718, "DKK": 0.2616}
-# print(курс_в_лева(exchange_rates))
+exchange_rates = {"EUR": 1.9558, "USD": 1.6718, "DKK": 0.2616}
+print(курс_в_лева(exchange_rates))
 # print(валута_към_левчета(
 #     ("EUR", 1.5),
 #     ("USD", 10),
