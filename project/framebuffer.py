@@ -22,7 +22,7 @@ class FrameBuffer:
         return self._framebuffer
 
 if __name__ == "__main__":
-    w, h = 256, 256
+    w, h = 1920, 1080
     fb = FrameBuffer(h, w)
     xs = np.linspace(0, 255, w, dtype=np.uint8)
     ys = np.linspace(0, 255, h, dtype=np.uint8)
