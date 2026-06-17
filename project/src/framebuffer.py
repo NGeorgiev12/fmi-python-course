@@ -20,6 +20,12 @@ class FrameBuffer:
 
     def get_pixels(self) -> np.ndarray:
         return self._framebuffer
+    
+    def get_height(self) -> int:
+        return self._height
+    
+    def get_width(self) -> int:
+        return self._width
 
 if __name__ == "__main__":
     w, h = 1920, 1080
@@ -29,5 +35,5 @@ if __name__ == "__main__":
     buffer = fb.get_pixels()
     buffer[:, :, 0] = xs[np.newaxis, :] 
     buffer[:, :, 1] = ys[:, np.newaxis]
-    fb.save_image("assets/test_gradient.png")
+    fb.save_image("../assets/test_gradient.png")
     print("Записах test_gradient.png")
