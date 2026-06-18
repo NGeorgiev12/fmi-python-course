@@ -1,6 +1,6 @@
 import numpy as np
 
-from exceptions import CollinearTriangleBaseVectorsException
+from exceptions.CollinearTriangleBaseVectorsException import CollinearTriangleBaseVectorsException
 from constants import EPSILON
 
 class Triangle:
@@ -43,7 +43,7 @@ class Triangle:
         """Return the unit (normalized) normal vector of the triangle's plane."""
         return self._normal_vec / np.linalg.norm(self._normal_vec)
     
-    def get_points(self) -> tuple[np.ndarray]:
+    def get_points(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Return tuple of the triangle points""" 
         return self._point0, self._point1, self._point2
     
@@ -63,6 +63,7 @@ class Triangle:
 
         Returns: True if the point is inside or on an edge of the triangle, else False.
         """
+        point = np.array(point, dtype=float)
         edge0 = self._point1 - self._point0
         edge1 = self._point2 - self._point1
         edge2 = self._point0 - self._point2
@@ -76,3 +77,4 @@ class Triangle:
         checkE2 = np.dot(self._normal_vec, np.cross(edge2, point_edge2_vec)) >= -EPSILON
 
         return checkE0 and checkE1 and checkE2 
+    
