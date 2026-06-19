@@ -33,4 +33,4 @@ class Camera:
         px = (ndc_x + 1.0) * 0.5 * IMAGE_WIDTH
         py = (1.0 - ndc_y) * 0.5 * IMAGE_HEIGHT
 
-        return px, py
+        return px, py, z

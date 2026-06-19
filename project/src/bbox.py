@@ -2,8 +2,6 @@ import math
 
 import numpy as np
 
-from triangle import Triangle
-
 class BoundingBox:
 
     def __init__(self, lower_bound: tuple[int], upper_bound: tuple[int]):
