@@ -2,17 +2,24 @@ import math
 
 import numpy as np
 
+from transforms import *
 from framebuffer import FrameBuffer
-from camera import project_point
 from triangle import Triangle
 from bbox import BoundingBox
+from camera import project_point
 from obj_loader import load_obj
 from shader import compute_lighting, compute_vertex_normals
-from transforms import rotation_x, rotation_y, transform_points, transform_directions
 from constants import EPSILON
 
-CAMERA_OFFSET = np.array([0., 0., -5.])
-MODEL_MATRIX = rotation_y(math.radians(35)) @ rotation_x(math.radians(28))
+MODEL_MATRIX = (
+    translation(0., 0., 0.)
+    @ rotation_y(math.radians(35)) @ rotation_x(math.radians(28))
+    @ scaling(1., 1., 1.)
+)
+EYE = np.array([0., 0., 5.])    
+TARGET = np.array([0., 0., 0.])   
+UP = np.array([0., 1., 0.])
+VIEW_MATRIX = look_at(EYE, TARGET, UP)
 FOV = 60.
 LIGHT_DIR = np.array([0.6, 0.8, 1.0])
 BASE_COLOR = (200, 200, 0)
@@ -47,7 +54,8 @@ def draw_triangle(
     lower = bbox.get_lower_bound()
     upper = bbox.get_upper_bound()
     min_x, min_y = int(lower[0]), int(lower[1])
-    max_x, max_y = int(upper[0]), int(upper[1])
+    max_x = min(int(upper[0]), frame_buffer.get_width() - 1)
+    max_y = min(int(upper[1]), frame_buffer.get_height() - 1)
 
     if shading == "phong":
         n0, n1, n2 = vertex_normals
@@ -79,11 +87,15 @@ def render_model(frame_buffer: FrameBuffer, path: str, shading: str = "flat") ->
     )
     vertices, triangles = load_obj(path)
     vertices_normals = compute_vertex_normals(vertices, triangles)
-    vertices = transform_points(MODEL_MATRIX, vertices)
-    vertices_normals = transform_directions(MODEL_MATRIX, vertices_normals)
-    vertices += CAMERA_OFFSET
-    total = len(triangles)
 
+    vertices = transform_points(MODEL_MATRIX, vertices)
+    vertices = transform_points(VIEW_MATRIX, vertices)
+
+    vertices_normals = transform_directions(MODEL_MATRIX, vertices_normals)
+    vertices_normals = transform_directions(VIEW_MATRIX, vertices_normals)
+    vertices_normals /= np.linalg.norm(vertices_normals, axis=1, keepdims=True)
+
+    total = len(triangles)
     for i, tri_indices in enumerate(triangles):
         print(f"\rRendering: {(i + 1) / total * 100:5.1f}%", end="", flush=True)
 
