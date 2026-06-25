@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from framebuffer import FrameBuffer
@@ -5,12 +7,14 @@ from camera import project_point
 from triangle import Triangle
 from bbox import BoundingBox
 from obj_loader import load_obj
-from shader import compute_diffuse, compute_vertex_normals
+from shader import compute_lighting, compute_vertex_normals
+from transforms import rotation_x, rotation_y, transform_points, transform_directions
 from constants import EPSILON
 
 CAMERA_OFFSET = np.array([0., 0., -5.])
+MODEL_MATRIX = rotation_y(math.radians(35)) @ rotation_x(math.radians(28))
 FOV = 60.
-LIGHT_DIR = np.array([0.6, 0.8, 1.0])   # горе-дясно-отпред; +z осветява челните стени
+LIGHT_DIR = np.array([0.6, 0.8, 1.0])
 BASE_COLOR = (200, 200, 0)
 AMBIENT = 0.15
 
@@ -31,18 +35,22 @@ def compute_depth(bary_coords: tuple, depths: tuple) -> float:
     return 1 / inv_z
 
 def draw_triangle(
-        frame_buffer: FrameBuffer, 
+        frame_buffer: FrameBuffer,
         triangle: Triangle,
-        vertex_normals: tuple,
         depth_buffer: np.ndarray,
-        depth_coefs: tuple) -> None:
+        depth_coefs: tuple,
+        shading: str,
+        color: tuple = None,
+        vertex_normals: tuple = None) -> None:
 
-    n0, n1, n2 = vertex_normals
     bbox = BoundingBox.from_points(triangle.get_points())
     lower = bbox.get_lower_bound()
     upper = bbox.get_upper_bound()
     min_x, min_y = int(lower[0]), int(lower[1])
     max_x, max_y = int(upper[0]), int(upper[1])
+
+    if shading == "phong":
+        n0, n1, n2 = vertex_normals
 
     for y in range(min_y, max_y + 1):
         for x in range(min_x, max_x + 1):
@@ -50,46 +58,72 @@ def draw_triangle(
             if triangle.edge_function(hit_point):
                 w0, w1, w2 = compute_barycentric_coords(triangle, hit_point)
                 depth = compute_depth((w0, w1, w2), depth_coefs)
+
                 if depth < depth_buffer[y, x]:
                     depth_buffer[y, x] = depth
-                    normal = w0 * n0 + w1 * n1 + w2 * n2
-                    normal /= np.linalg.norm(normal)
-                    color = compute_diffuse(normal, LIGHT_DIR, BASE_COLOR, AMBIENT)
-                    frame_buffer.set_pixel(y, x, color)
 
-def render_model(frame_buffer: FrameBuffer, path: str) -> None:
+                    if shading == "flat":
+                        pixel_color = color
+                    else:
+                        normal = w0 * n0 + w1 * n1 + w2 * n2
+                        normal /= np.linalg.norm(normal)
+                        pixel_color = compute_lighting(normal, LIGHT_DIR, BASE_COLOR, AMBIENT)
+                    
+                    frame_buffer.set_pixel(y, x, pixel_color)
+
+def render_model(frame_buffer: FrameBuffer, path: str, shading: str = "flat") -> None:
     depth_buffer = np.full(
-        (frame_buffer.get_height(), frame_buffer.get_width()), 
+        (frame_buffer.get_height(), frame_buffer.get_width()),
         np.inf, 
         dtype=float
     )
     vertices, triangles = load_obj(path)
     vertices_normals = compute_vertex_normals(vertices, triangles)
+    vertices = transform_points(MODEL_MATRIX, vertices)
+    vertices_normals = transform_directions(MODEL_MATRIX, vertices_normals)
     vertices += CAMERA_OFFSET
+    total = len(triangles)
 
-    for tri_indices in triangles:
+    for i, tri_indices in enumerate(triangles):
+        print(f"\rRendering: {(i + 1) / total * 100:5.1f}%", end="", flush=True)
+
         v0, v1, v2 = vertices[tri_indices[0]], vertices[tri_indices[1]], vertices[tri_indices[2]]
-                
-        # check if the object is behind the camera
         if v0[2] >= -EPSILON or v1[2] >= -EPSILON or v2[2] >= -EPSILON:
             continue
 
-        normal = Triangle(v0, v1, v2).get_normal_vec()
-        centre_point = (v0 + v1 + v2) / 3.
-        if np.dot(normal, -centre_point) < EPSILON:
-            normal *= -1.
-         
-        color = compute_diffuse(normal, LIGHT_DIR, BASE_COLOR, AMBIENT)
         px0, py0, z0 = project_point(v0, FOV)
         px1, py1, z1 = project_point(v1, FOV)
         px2, py2, z2 = project_point(v2, FOV)
-        vertex_normals = vertices_normals[tri_indices[0]], vertices_normals[tri_indices[1]], vertices_normals[tri_indices[2]]
-
         triangle = Triangle((px0, py0, 0.), (px1, py1, 0.), (px2, py2, 0.))
-        draw_triangle(
-            frame_buffer, 
-            triangle,
-            vertex_normals, 
-            depth_buffer, 
-            depth_coefs=(z0, z1, z2)
-        )
+
+        if shading == "flat":
+            face_normal = np.cross(v1 - v0, v2 - v0)
+            face_normal /= np.linalg.norm(face_normal)
+            centre_point = (v0 + v1 + v2) / 3.
+
+            if np.dot(face_normal, -centre_point) < EPSILON:
+                face_normal = -face_normal
+            color = compute_lighting(face_normal, LIGHT_DIR, BASE_COLOR, AMBIENT)
+            draw_triangle(
+                frame_buffer, 
+                triangle, 
+                depth_buffer, 
+                depth_coefs=(z0, z1, z2),
+                shading="flat", 
+                color=color
+            )
+        else:
+            vertex_normals = (
+                vertices_normals[tri_indices[0]],
+                vertices_normals[tri_indices[1]],
+                vertices_normals[tri_indices[2]],
+            )
+            draw_triangle(
+                frame_buffer, 
+                triangle, 
+                depth_buffer, 
+                depth_coefs=(z0, z1, z2),
+                shading="phong", 
+                vertex_normals=vertex_normals)
+
+    print()

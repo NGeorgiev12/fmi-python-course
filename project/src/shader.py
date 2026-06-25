@@ -1,17 +1,31 @@
 import numpy as np
 
-def compute_diffuse(
+SHININESS = 32.
+SPECULAR_COLOR = (255, 255, 255)
+VIEW_DIR = np.array([0., 0., 1.])
+
+def compute_lighting(
         normal: np.ndarray, 
         light_dir: np.ndarray,
         base_color: tuple, 
-        ambient: float = 0.15
+        ambient: float = 0.15,
+        shininess: float = SHININESS
     ) -> tuple:
 
     n = normal / np.linalg.norm(normal)
     l = light_dir / np.linalg.norm(light_dir)
-    intensity = max(0.0, float(np.dot(n, l)))
-    scale = ambient + (1.0 - ambient) * intensity
-    return tuple(int(min(255, c * scale)) for c in base_color)
+    specular = 0
+    diffuse = max(0.0, float(np.dot(n, l)))
+    if diffuse > 0.:                                
+        h = l + VIEW_DIR
+        h /= np.linalg.norm(h)               
+        specular = max(0., float(np.dot(n, h))) ** shininess
+
+    diffuse_scale = ambient + (1. - ambient) * diffuse
+    return tuple(
+        int(min(255, bc * diffuse_scale + sc * specular))
+        for bc, sc in zip(base_color, SPECULAR_COLOR)
+    )
 
 def compute_vertex_normals(vertices: np.ndarray, triangles: np.ndarray) -> np.ndarray:
     """
@@ -32,6 +46,11 @@ def compute_vertex_normals(vertices: np.ndarray, triangles: np.ndarray) -> np.nd
         normals[i0] += face_normal
         normals[i1] += face_normal
         normals[i2] += face_normal
+
+    center = vertices.mean(axis=0)
+    outward = vertices - center 
+    pointing_inward = np.sum(normals * outward, axis=1) < 0
+    normals[pointing_inward] = -normals[pointing_inward]
 
     lengths = np.linalg.norm(normals, axis=1, keepdims=True)
     lengths[lengths == 0] = 1.0  
