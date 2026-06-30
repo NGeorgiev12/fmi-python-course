@@ -1,30 +1,29 @@
 import numpy as np
 
-SHININESS = 32.
-SPECULAR_COLOR = (255, 255, 255)
+from scene_parser import Material
+
 VIEW_DIR = np.array([0., 0., 1.])
 
 def compute_lighting(
-        normal: np.ndarray, 
+        normal: np.ndarray,
         light_dir: np.ndarray,
-        base_color: tuple, 
-        ambient: float = 0.15,
-        shininess: float = SHININESS
-    ) -> tuple:
+        material: "Material",
+        ambient: float = 0.15) -> tuple:
 
     n = normal / np.linalg.norm(normal)
     l = light_dir / np.linalg.norm(light_dir)
-    specular = 0
+
     diffuse = max(0.0, float(np.dot(n, l)))
-    if diffuse > 0.:                                
+    specular = 0.
+    if diffuse > 0.:
         h = l + VIEW_DIR
-        h /= np.linalg.norm(h)               
-        specular = max(0., float(np.dot(n, h))) ** shininess
+        h /= np.linalg.norm(h)
+        specular = max(0., float(np.dot(n, h))) ** material.shininess
 
     diffuse_scale = ambient + (1. - ambient) * diffuse
     return tuple(
         int(min(255, bc * diffuse_scale + sc * specular))
-        for bc, sc in zip(base_color, SPECULAR_COLOR)
+        for bc, sc in zip(material.base_color, material.specular_color)
     )
 
 def compute_vertex_normals(vertices: np.ndarray, triangles: np.ndarray) -> np.ndarray:

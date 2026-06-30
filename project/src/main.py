@@ -1,12 +1,9 @@
 from rasterizer import render_model
-from framebuffer import FrameBuffer
-from constants import IMAGE_HEIGHT, IMAGE_WIDTH
+from scene_parser import load_scene
 
 def main():
-    frame_buffer = FrameBuffer(IMAGE_HEIGHT, IMAGE_WIDTH)
-    path = "../assets/.obj files/sphere.obj"
-    render_model(frame_buffer, path, "phong")
-    frame_buffer.save_image("../assets/results/rotated_sphere.png")
+    scene = load_scene("../assets/json_files/sphere.json")
+    render_model(scene)
 
 if __name__ == "__main__":
     main()

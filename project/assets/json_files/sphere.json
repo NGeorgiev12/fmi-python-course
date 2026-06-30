@@ -1,0 +1,25 @@
+{
+  "image": { "width": 960, "height": 540, "output": "../assets/results/sphere.png" },
+  "camera": {
+    "eye": [0, 0, 5],
+    "target": [0, 0, 0],
+    "up": [0, 1, 0],
+    "fov": 60
+  },
+  "light": {
+    "direction": [0.6, 0.8, 1.0],
+    "ambient": 0.15
+  },
+  "model": {
+    "path": "../assets/obj_files/sphere.obj",
+    "shading": "phong",
+    "base_color": [200, 200, 0],
+    "shininess": 32,
+    "specular_color": [255, 255, 255],
+    "transform": {
+      "translation": [0, 0, 0],
+      "rotation": [28, 35, 0],
+      "scale": [1, 1, 1]
+    }
+  }
+}

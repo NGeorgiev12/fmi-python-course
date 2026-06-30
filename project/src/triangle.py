@@ -1,7 +1,7 @@
 import numpy as np
 
 from exceptions.CollinearTriangleBaseVectorsException import CollinearTriangleBaseVectorsException
-from constants import EPSILON
+EPSILON = 1e-6
 
 class Triangle:
     """

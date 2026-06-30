@@ -1,8 +1,6 @@
 import math
 
-from constants import IMAGE_HEIGHT, IMAGE_WIDTH
-
-def project_point(point: tuple, fov_degrees: float) -> tuple:
+def project_point(point: tuple, fov_degrees: float, width: int, height: int) -> tuple:
     """
     Project a 3D point from camera space to 2D raster (pixel) coordinates.
 
@@ -21,14 +19,14 @@ def project_point(point: tuple, fov_degrees: float) -> tuple:
         corner and y increasing downward.
     """
     x, y, z = point
-    aspect = IMAGE_WIDTH / IMAGE_HEIGHT
+    aspect = width / height
     scale = math.tan(math.radians(fov_degrees) / 2.)
 
     z = -z
     ndc_x = (x / z) / (scale * aspect)
     ndc_y = (y / z) / scale
 
-    px = (ndc_x + 1.0) * 0.5 * IMAGE_WIDTH
-    py = (1.0 - ndc_y) * 0.5 * IMAGE_HEIGHT
+    px = (ndc_x + 1.0) * 0.5 * width
+    py = (1.0 - ndc_y) * 0.5 * height
 
     return px, py, z
