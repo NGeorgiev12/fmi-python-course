@@ -1,5 +1,9 @@
 {
-  "image": { "width": 960, "height": 540, "output": "../assets/results/sphere.png" },
+  "image": { 
+    "width": 960, 
+    "height": 540, 
+    "output": "../assets/results/sphere.png" 
+  },
   "camera": {
     "eye": [0, 0, 5],
     "target": [0, 0, 0],

@@ -1,0 +1,29 @@
+{
+  "image": {
+    "width": 1920,
+    "height": 1080,
+    "output": "../assets/results/purple_dragon.png"
+  },
+  "camera": {
+    "eye": [0, 14, 26],
+    "target": [0, 13.577382, 25.093692],
+    "up": [0, 0.906308, -0.422618],
+    "fov": 90
+  },
+  "light": {
+    "direction": [0.789352, 0.613941, 0.0],
+    "ambient": 0.15
+  },
+  "model": {
+    "path": "../assets/obj_files/purple_dragon.obj",
+    "shading": "flat",
+    "base_color": [204, 0, 204],
+    "shininess": 32,
+    "specular_color": [255, 255, 255],
+    "transform": {
+      "translation": [0, 0, 0],
+      "rotation": [0, 0, 0],
+      "scale": [1, 1, 1]
+    }
+  }
+}
