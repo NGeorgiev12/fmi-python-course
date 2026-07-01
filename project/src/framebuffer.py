@@ -26,14 +26,3 @@ class FrameBuffer:
     
     def get_width(self) -> int:
         return self._width
-
-if __name__ == "__main__":
-    w, h = 1920, 1080
-    fb = FrameBuffer(h, w)
-    xs = np.linspace(0, 255, w, dtype=np.uint8)
-    ys = np.linspace(0, 255, h, dtype=np.uint8)
-    buffer = fb.get_pixels()
-    buffer[:, :, 0] = xs[np.newaxis, :] 
-    buffer[:, :, 1] = ys[:, np.newaxis]
-    fb.save_image("../assets/test_gradient.png")
-    print("Записах test_gradient.png")
