@@ -16,7 +16,22 @@ from shader import compute_lighting, compute_vertex_normals
 
 EPSILON = 1e-6
 
+
 def compute_barycentric_coords(triangle: Triangle, hit_point: np.ndarray) -> tuple:
+    """Compute the barycentric weights of a point within a triangle.
+
+    Each weight is the area of the sub-triangle opposite its vertex divided by
+    the total area, so the weights sum to 1 and equal (1, 0, 0), (0, 1, 0) and
+    (0, 0, 1) at the three vertices respectively. Used to interpolate per-vertex
+    quantities (depth, normals) across the triangle.
+
+    Args:
+        triangle: The triangle, in screen space.
+        hit_point: The point to weight, in the same space as the triangle.
+
+    Returns:
+        A tuple (w0, w1, w2) of weights aligned with the triangle's vertices.
+    """
     p0, p1, p2 = triangle.get_points()
     double_area = triangle.get_area() * 2.
 
@@ -28,6 +43,18 @@ def compute_barycentric_coords(triangle: Triangle, hit_point: np.ndarray) -> tup
 
 
 def compute_depth(bary_coords: tuple, depths: tuple) -> float:
+    """Interpolate perspective-correct depth at a point inside a triangle.
+
+    Interpolates 1/z linearly in screen space (not z itself) and inverts the
+    result, which is the correct way to interpolate depth under perspective.
+
+    Args:
+        bary_coords: The (w0, w1, w2) barycentric weights of the point.
+        depths: The (z0, z1, z2) depths at the triangle's three vertices.
+
+    Returns:
+        The perspective-correct interpolated depth at the point.
+    """
     z0, z1, z2 = depths
     u, v, w = bary_coords
     inv_z = u / z0 + v / z1 + w / z2
@@ -45,7 +72,28 @@ def draw_triangle(
         ambient: float,
         color: tuple = None,
         vertex_normals: tuple = None) -> None:
-    
+    """Rasterize one triangle into the frame buffer with depth testing.
+
+    Iterates the pixels within the triangle's screen-space bounding box (clamped
+    to the image), keeps those inside the triangle, and for each one runs the
+    depth test against the depth buffer. Surviving pixels are colored either with
+    a precomputed flat color or, for Phong shading, by interpolating the vertex
+    normals and lighting them per pixel.
+
+    Args:
+        frame_buffer: The image buffer to draw into.
+        triangle: The triangle in screen space.
+        depth_buffer: The (height, width) array of current nearest depths.
+        depth_coefs: The (z0, z1, z2) camera-space depths of the vertices.
+        shading: Either ``"flat"`` or ``"phong"``.
+        light_dir: Direction toward the light (used for Phong shading).
+        material: Material used for Phong shading.
+        ambient: Ambient light fraction used for Phong shading.
+        color: Precomputed color for flat shading (required when shading is
+            ``"flat"``).
+        vertex_normals: The three per-vertex normals (required when shading is
+            ``"phong"``).
+    """
     bbox = BoundingBox.from_points(triangle.get_points())
     lower = bbox.get_lower_bound()
     upper = bbox.get_upper_bound()
@@ -77,6 +125,18 @@ def draw_triangle(
 
 
 def render_model(scene: Scene) -> None:
+    """Render a scene to an image file.
+
+    Runs the full pipeline: builds the model and view matrices from the scene,
+    loads the mesh, computes vertex normals, transforms vertices and normals
+    into camera space, then projects and rasterizes every triangle with depth
+    testing. Triangles behind the camera are skipped. Flat shading lights one
+    normal per face; Phong shading interpolates vertex normals per pixel. The
+    finished frame buffer is written to the scene's output path.
+
+    Args:
+        scene: The fully parsed scene describing image, camera, light and model.
+    """
     image = scene.image
     camera = scene.camera
     light = scene.light
@@ -133,13 +193,13 @@ def render_model(scene: Scene) -> None:
                 face_normal = -face_normal
             color = compute_lighting(face_normal, light.direction, model.material, light.ambient)
             draw_triangle(
-                frame_buffer, 
-                triangle, 
-                depth_buffer, 
+                frame_buffer,
+                triangle,
+                depth_buffer,
                 (z0, z1, z2),
                 shading="flat",
-                light_dir=light.direction, 
-                material=model.material, 
+                light_dir=light.direction,
+                material=model.material,
                 ambient=light.ambient,
                 color=color,
             )
@@ -150,13 +210,13 @@ def render_model(scene: Scene) -> None:
                 vertices_normals[tri_indices[2]],
             )
             draw_triangle(
-                frame_buffer, 
-                triangle, 
-                depth_buffer, 
+                frame_buffer,
+                triangle,
+                depth_buffer,
                 (z0, z1, z2),
                 shading="phong",
-                light_dir=light.direction, 
-                material=model.material, 
+                light_dir=light.direction,
+                material=model.material,
                 ambient=light.ambient,
                 vertex_normals=vertex_normals
             )

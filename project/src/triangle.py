@@ -3,6 +3,7 @@ import numpy as np
 from exceptions.CollinearTriangleBaseVectorsException import CollinearTriangleBaseVectorsException
 EPSILON = 1e-6
 
+
 class Triangle:
     """
     A triangle defined by three vertices in 2D or 3D space.
@@ -76,5 +77,4 @@ class Triangle:
         checkE1 = np.dot(self._normal_vec, np.cross(edge1, point_edge1_vec)) >= -EPSILON
         checkE2 = np.dot(self._normal_vec, np.cross(edge2, point_edge2_vec)) >= -EPSILON
 
-        return checkE0 and checkE1 and checkE2 
-    
+        return checkE0 and checkE1 and checkE2
