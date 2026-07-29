@@ -1,4 +1,5 @@
 import json
+from typing import Self
 import numpy as np
 
 from dataclasses import dataclass
@@ -120,7 +121,7 @@ class Material:
     specular_color: tuple
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Material":
+    def from_dict(cls, data: dict) -> Self:
         """Build a Material, filling in defaults for missing fields.
 
         Args:

@@ -12,15 +12,18 @@ def main():
     #     scene.image.output = f"../assets/results/purple_dragon{i:02d}.png"
     #     render_model(scene)
 
-    frames = [Image.open(f"../assets/results/purple_dragon{i:02d}.png") for i in range(12)]
+    # frames = [Image.open(f"../assets/results/purple_dragon{i:02d}.png") for i in range(12)]
 
-    frames[0].save(
-        "../assets/results/dragon.gif",
-        save_all=True,           
-        append_images=frames[1:],
-        duration=100,           
-        loop=0,                  
-    )
+    # frames[0].save(
+    #     "../assets/results/dragon.gif",
+    #     save_all=True,           
+    #     append_images=frames[1:],
+    #     duration=100,           
+    #     loop=0,                  
+    # )
+
+    scene = load_scene("../assets/json_files/cube.json")
+    render_model(scene)
     
 if __name__ == "__main__":
     main()

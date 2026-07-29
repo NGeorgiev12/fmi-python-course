@@ -1,4 +1,5 @@
 import math
+from typing import Self
 
 import numpy as np
 
@@ -37,7 +38,7 @@ class BoundingBox:
         return cls(np.full(dim, math.inf), np.full(dim, -math.inf))
 
     @classmethod
-    def from_points(cls, points) -> "BoundingBox":
+    def from_points(cls, points) -> Self:
         """Build the tight box enclosing a set of points.
 
         Args:

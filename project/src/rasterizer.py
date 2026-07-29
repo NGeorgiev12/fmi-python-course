@@ -68,7 +68,7 @@ def draw_triangle(
         depth_coefs: tuple,
         shading: str,
         light_dir: np.ndarray,
-        material: "Material",
+        material: Material,
         ambient: float,
         color: tuple = None,
         vertex_normals: tuple = None) -> None:

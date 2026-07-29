@@ -1,0 +1,29 @@
+{
+  "image": {
+    "width": 800,
+    "height": 600,
+    "output": "../assets/results/blender_cube.png"
+  },
+  "camera": {
+    "eye": [0, 0, 5],
+    "target": [0, 0, 0],
+    "up": [0, 1, 0],
+    "fov": 60
+  },
+  "light": {
+    "direction": [0.6, 0.8, 1.0],
+    "ambient": 0.15
+  },
+  "model": {
+    "path": "../assets/obj_files/blender_cube.obj",
+    "shading": "flat",
+    "base_color": [80, 160, 220],
+    "shininess": 32,
+    "specular_color": [255, 255, 255],
+    "transform": {
+      "translation": [0, 0, 0],
+      "rotation": [25, 60, 0],
+      "scale": [1, 1, 1]
+    }
+  }
+}

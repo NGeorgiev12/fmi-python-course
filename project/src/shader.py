@@ -8,7 +8,7 @@ VIEW_DIR = np.array([0., 0., 1.])  # view direction in camera space (distant-vie
 def compute_lighting(
         normal: np.ndarray,
         light_dir: np.ndarray,
-        material: "Material",
+        material: Material,
         ambient: float = 0.15) -> tuple:
     """Compute the shaded RGB color of a surface point.
 
